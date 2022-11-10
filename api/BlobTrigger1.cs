@@ -54,8 +54,8 @@ namespace Company.Function
 
                     try
                     {
-                        Uri endpoint = new Uri("https://qnaanna.cognitiveservices.azure.com/");
-                        AzureKeyCredential credential = new AzureKeyCredential("0f7a4abb027549959f5b1e44bd92a03d");
+                        Uri endpoint = new Uri("");
+                        AzureKeyCredential credential = new AzureKeyCredential("");
 
                         QuestionAnsweringAuthoringClient client = new QuestionAnsweringAuthoringClient(endpoint, credential);
                         foreach (var record in qarecords)
