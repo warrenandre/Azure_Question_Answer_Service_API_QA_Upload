@@ -54,8 +54,8 @@ namespace Company.Function
                             country = sst.ChildElements[int.Parse(((Cell)row.ChildElements[2]).CellValue.Text)]?.InnerText,
                             city = sst.ChildElements[int.Parse(((Cell)row.ChildElements[3]).CellValue.Text)]?.InnerText,
                             code = sst.ChildElements[int.Parse(((Cell)row.ChildElements[4]).CellValue.Text)]?.InnerText,
-                            additionalLocationPhrases = row.ChildElements[5] != null ? sst.ChildElements[int.Parse(((Cell)row.ChildElements[5]).CellValue.Text)]?.InnerText : ""
-                            
+                            additionalLocationPhrases = sst.ChildElements[int.Parse(((Cell)row.ChildElements[5]).CellValue.Text)]?.InnerText
+
                         };
                         qarecords.Add(record);
                     }
@@ -68,33 +68,29 @@ namespace Company.Function
                         QuestionAnsweringAuthoringClient client = new QuestionAnsweringAuthoringClient(endpoint, credential);
 
                         var operation = "add";
-                        uint rowcounter = 1;
-                        // var additionalPhrasesList = new Dictionary<string, string>();
-                        // var additionalphrasses = qarecords.Where(x => x.additionalLocationPhrases != null);
-                        // foreach (var additionalPhrase in additionalphrasses)
-                        // {
-                        //     additionalPhrasesList.Add(additionalPhrase.code, additionalPhrase.additionalLocationPhrases);
-                        // }
-
-                        foreach (var record in qarecords)
+                        
+                        
+                        while (qarecords.Any())
                         {
-
-                            var rrr = new Dictionary<string, string> { { "test", "test" } };
-                            var metadataa = new string[] { "kzn", "durbs", "amanzimtoti" };
-                            var request = RequestContent.Create(
-                            new[]
+                            int rowcounter = 0;
+                            int takecount = qarecords.Count >= 1000 ? 1000:qarecords.Count;
+                            object[] arr = new object[takecount];
+                            foreach (var record in qarecords.Take(takecount))
                             {
-                                    new
+
+                                var rrr = new Dictionary<string, string> { { "test", "test" } };
+                                var metadataa = new string[] { "kzn", "durbs", "amanzimtoti" };
+                                arr[rowcounter] = new
+                                {
+                                    op = operation,
+                                    Value = new
                                     {
-                                        op=operation,
-                                        Value = new
-                                        {
-                                            questions=new[]
-                                            {
+                                        questions = new[]
+                                                {
                                                 $"{record.question}"
                                             },
-                                            answer=$"{record.answer}",
-                                            metadata=new Dictionary<string, string>
+                                        answer = $"{record.answer}",
+                                        metadata = new Dictionary<string, string>
                                             {
                                                 {"country",record.country},
                                                 {"city",record.city},
@@ -102,20 +98,19 @@ namespace Company.Function
                                                 {"locphrases" ,record.additionalLocationPhrases}
 
                                             }
-                                        }
                                     }
-                            });
+                                };
+                                rowcounter++;
 
-                            Operation<Pageable<BinaryData>> updateQnasOperation = client.UpdateQnas(WaitUntil.Started, projectName, request);
+                            }
+                            qarecords= qarecords.Skip(takecount).ToList();
+                            var request = RequestContent.Create(
+                                                    arr);
 
-                            var qnaOpsResult = updateQnasOperation.Value.ToList();
+                        var updateQnasOperation = client.UpdateQnas(WaitUntil.Completed, projectName, request);
 
-                            var qnaOpsResultString = Encoding.ASCII.GetString(qnaOpsResult.First());
-                            var qnaRoot = JsonConvert.DeserializeObject<Root>(qnaOpsResultString);
-                            qarecords[((int)rowcounter)].id = qnaRoot.id.ToString();
-
-                            rowcounter++;
                         }
+                        
 
                     }
                     catch (Exception ex)
@@ -130,50 +125,50 @@ namespace Company.Function
             }
         }
 
-
-
-
-
-        public class QnaPair
-        {
-            public string id { get; set; }
-            public string question { get; set; }
-            public string answer { get; set; }
-            public string country { get; set; }
-            public string city { get; set; }
-            public string code { get; set; }
-            public string additionalLocationPhrases { get; set; }
-        }
-
-        public class Dialog
-        {
-            public bool isContextOnly { get; set; }
-            public List<object> prompts { get; set; }
-        }
-
-        public class Metadata
-        {
-            public string country { get; set; }
-            public string city { get; set; }
-            public string code { get; set; }
-            public string system_metadata_qna_edited_manually { get; set; }
-        }
-
-        public class Root
-        {
-            public int id { get; set; }
-            public string answer { get; set; }
-            public string source { get; set; }
-            public List<string> questions { get; set; }
-            public Metadata metadata { get; set; }
-            public Dialog dialog { get; set; }
-            public List<object> activeLearningSuggestions { get; set; }
-            public bool isDocumentText { get; set; }
-            public string lastUpdatedDateTime { get; set; }
-        }
-
     }
+
+
+
+    public class QnaPair
+    {
+        public string id { get; set; }
+        public string question { get; set; }
+        public string answer { get; set; }
+        public string country { get; set; }
+        public string city { get; set; }
+        public string code { get; set; }
+        public string additionalLocationPhrases { get; set; }
+    }
+
+    public class Dialog
+    {
+        public bool isContextOnly { get; set; }
+        public List<object> prompts { get; set; }
+    }
+
+    public class Metadata
+    {
+        public string country { get; set; }
+        public string city { get; set; }
+        public string code { get; set; }
+        public string system_metadata_qna_edited_manually { get; set; }
+    }
+
+    public class Root
+    {
+        public int id { get; set; }
+        public string answer { get; set; }
+        public string source { get; set; }
+        public List<string> questions { get; set; }
+        public Metadata metadata { get; set; }
+        public Dialog dialog { get; set; }
+        public List<object> activeLearningSuggestions { get; set; }
+        public bool isDocumentText { get; set; }
+        public string lastUpdatedDateTime { get; set; }
+    }
+
 }
+
 
 
 
