@@ -108,14 +108,14 @@ namespace Company.Function
                                                     arr);
 
                         var updateQnasOperation = client.UpdateQnas(WaitUntil.Completed, projectName, request);
-
+                        log.LogInformation(string.Format("Rows uploaded = {0}", takecount));
                         }
                         
 
                     }
                     catch (Exception ex)
                     {
-
+                        log.LogError(ex,ex.Message);
                     }
                 }
             }
