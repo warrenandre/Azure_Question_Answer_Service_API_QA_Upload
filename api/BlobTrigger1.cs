@@ -64,6 +64,7 @@ namespace Company.Function
                     {
                         Uri endpoint = new Uri(endpointURI);
                         AzureKeyCredential credential = new AzureKeyCredential(azureCreds);
+                        //https://learn.microsoft.com/en-us/azure/cognitive-services/language-service/question-answering/how-to/authoring
 
                         QuestionAnsweringAuthoringClient client = new QuestionAnsweringAuthoringClient(endpoint, credential);
 
@@ -78,8 +79,9 @@ namespace Company.Function
                             foreach (var record in qarecords.Take(takecount))
                             {
 
-                                var rrr = new Dictionary<string, string> { { "test", "test" } };
-                                var metadataa = new string[] { "kzn", "durbs", "amanzimtoti" };
+                                var alternativeQ = string.Concat(record.question," ", record.code);
+                                var alternativeQ2 = string.Concat(record.question," ", record.city);
+                                
                                 arr[rowcounter] = new
                                 {
                                     op = operation,
@@ -87,7 +89,9 @@ namespace Company.Function
                                     {
                                         questions = new[]
                                                 {
-                                                $"{record.question}"
+                                                $"{record.question}",
+                                                $"{alternativeQ}",
+                                                $"{alternativeQ2}"
                                             },
                                         answer = $"{record.answer}",
                                         metadata = new Dictionary<string, string>
@@ -123,6 +127,8 @@ namespace Company.Function
             {
                 log.LogInformation($"C# Blob trigger function blob\n Name:{name} \n not processed due to filename");
             }
+
+            
         }
 
     }
